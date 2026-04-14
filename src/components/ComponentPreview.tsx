@@ -101,19 +101,22 @@ const ComponentPreview: React.FC<ComponentPreviewProps> = ({ code, isGenerating 
                       <meta charset="utf-8">
                       <script>
                         window.process = { env: { NODE_ENV: 'production' } };
-                        window.exports = {};
-                        window.module = { exports: window.exports };
                       </script>
+                      
+                      <!-- Standard UMD Loads -->
                       <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
                       <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
                       <script>
+                        // Force globals for libraries that check for them
                         window.React = React;
                         window.ReactDOM = ReactDOM;
                       </script>
+
                       <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
                       <script src="https://cdn.tailwindcss.com"></script>
                       <script src="https://unpkg.com/framer-motion@11.0.8/dist/framer-motion.js"></script>
                       <script src="https://unpkg.com/lucide-react@0.344.0/dist/umd/lucide-react.min.js"></script>
+                      
                       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
                       <style>
                         body { 
@@ -133,28 +136,37 @@ const ComponentPreview: React.FC<ComponentPreviewProps> = ({ code, isGenerating 
                       <div id="root"></div>
                       <script type="text/babel">
                         const { useState, useEffect, useMemo, useCallback, useRef, Fragment, forwardRef } = React;
-                        const FM = window.Motion || window.FramerMotion || window.framerMotion;
-                        const { motion, AnimatePresence, LayoutGroup } = FM || {};
                         
+                        // Setup FM and Lucide
+                        const FM = window.Motion || window.framerMotion || window.FramerMotion;
+                        const { motion, AnimatePresence, LayoutGroup } = FM || {};
                         const Lucide = window.LucideReact || window.lucide || window.Lucide;
+                        
+                        // Safely map icons
                         if (Lucide) {
-                          Object.entries(Lucide).forEach(([name, component]) => {
-                            window[name] = component;
-                          });
+                          try {
+                            Object.entries(Lucide).forEach(([name, component]) => {
+                              if (component) window[name] = component;
+                            });
+                          } catch (e) {
+                            console.warn("Lucide icon mapping partially failed:", e);
+                          }
                         }
 
                         try {
                           const rawCode = decodeURIComponent(escape(atob("${encodedCode}")));
                           
-                          // Robustly strip imports and exports
                           let processedCode = rawCode.split('\\n')
                             .filter(line => !line.trim().startsWith('import ') && !line.trim().startsWith('import{'))
                             .join('\\n');
                           
-                          processedCode = processedCode.replace(/export\\s+default\\s+/g, 'module.exports.default = ');
-                          processedCode = processedCode.replace(/export\\s+const\\s+/g, 'const ');
-                          processedCode = processedCode.replace(/export\\s+function\\s+/g, 'function ');
-                          processedCode = processedCode.replace(/export\\s+class\\s+/g, 'class ');
+                          window.module = { exports: {} };
+                          window.exports = window.module.exports;
+
+                          processedCode = processedCode.replace(/export\\s+default\\s+/g, 'window.module.exports.default = ');
+                          processedCode = processedCode.replace(/export\\s+const\\s+/g, 'window.module.exports.');
+                          processedCode = processedCode.replace(/export\\s+function\\s+/g, 'window.module.exports.');
+                          processedCode = processedCode.replace(/export\\s+class\\s+/g, 'window.module.exports.');
 
                           const transpiled = Babel.transform(processedCode, { 
                             presets: ['react'],
@@ -163,7 +175,15 @@ const ComponentPreview: React.FC<ComponentPreviewProps> = ({ code, isGenerating 
                           
                           eval(transpiled);
 
-                          const AppRoot = module.exports.default || Object.values(module.exports)[0];
+                          const AppRoot = window.module.exports.default || Object.values(window.module.exports)[0];
+                          
+                          delete window.module;
+                          delete window.exports;
+
+                          if (!AppRoot) {
+                            const matches = processedCode.match(/function\\s+(\\w+)/) || processedCode.match(/const\\s+(\\w+)\\s+=/);
+                            if (matches) AppRoot = eval(matches[1]);
+                          }
                           
                           if (AppRoot) {
                             ReactDOM.createRoot(document.getElementById('root')).render(
@@ -172,7 +192,7 @@ const ComponentPreview: React.FC<ComponentPreviewProps> = ({ code, isGenerating 
                               </React.StrictMode>
                             );
                           } else {
-                            throw new Error("Could not find a React component to render. Ensure your component is exported or defined correctly.");
+                            throw new Error("Could not find a React component to render.");
                           }
 
                         } catch (err) {
