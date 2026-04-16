@@ -1,6 +1,6 @@
-# 🌌 UI Generator
+# 🌌 UI Generator + Agent Pipeline
 
-A high-performance, distraction-free dashboard for generating premium React components using an AI-driven agentic pipeline. Describe your requirements (PRD), and watch as the system synthesizes, transpiles, and renders your UI in real-time.
+A high-performance, distraction-free system for generating premium React components using an **AI-driven multi-agent pipeline**. The system evolves from a PRD-based UI generator into a complete **agentic architecture with memory, tool-calling, and multi-agent orchestration**.
 
 <video width="100%" controls poster="src/assets/prototype.png">
   <source src="SpecToUIAgent.mp4" type="video/mp4">
@@ -11,96 +11,165 @@ A high-performance, distraction-free dashboard for generating premium React comp
 
 ---
 
-## ✨ Features
+# 🚀 Project Phases
 
-- **🚀 Real-time Synthesis**: Live transpilation using Babel-standalone for immediate visual feedback.
-- **💎 Premium Aesthetics**: Built-in design system supporting "Dark Glassmorphism" and sleek animations.
-- **🤖 Multi-Model Pipeline**: Support for Google Gemini 1.5, Groq (Llama 3), and xAI (Grok).
-- **📝 PRD-Driven**: Focused on structured requirements rather than simple prompts.
-- **💾 Design History**: Local persistence for your generation history and design iterations.
-- **🛠 Code Transparency**: Toggle between live preview and raw source code with one click.
+## 🟢 Phase 1 — UI Generator (Frontend Task)
+
+Built a React/Next.js application where:
+
+- User provides a **Product Requirements Document (PRD)**
+- AI generates:
+  - UI component tree
+  - Tailwind-based React code
+- Features:
+  - Real-time preview using Babel
+  - Code export
+  - Multi-model LLM support
+  - Design history
+
+👉 This phase focuses on **PRD → UI generation**
 
 ---
 
-## 🏗 Architecture
+## 🔵 Phase 2 — Agent Pipeline (Capstone)
 
-The system utilizes a split-execution pipeline where prompt synthesis happens on the server, while transpilation and rendering occur entirely in the browser for maximum responsiveness.
+Extended Phase 1 into a **complete agentic system** with:
+
+### 🤖 Multi-Agent Architecture
+- **Agent 1: PRD Analyzer**
+  - Converts raw PRD → structured JSON (pages, components, features)
+- **Agent 2: UI Generator**
+  - Converts structured data → React + Tailwind UI
+
+---
+
+### 🔧 Tool Calling Layer
+Agents use tools instead of directly generating everything:
+
+- `generateComponentTree()`
+- `previewUI()`
+- `exportCode()`
+
+---
+
+### 🧠 Memory System
+- Stores:
+  - Previous PRDs
+  - Generated UI
+  - Structured outputs
+- Enables:
+  - reuse
+  - iteration
+  - history tracking
+
+---
+
+### 🔄 Agent Flow
 
 ```mermaid
 graph TD
-    User([User]) -->|Inputs PRD| PromptEditor[Prompt Editor]
-    PromptEditor -->|PRD + System Prompt| API[API Route /api/generate]
-    
-    subgraph "Server (Next.js Edge/Node)"
-        API -->|Prompt Synthesis| LLM_Router{LLM Router}
-        LLM_Router -->|Generate Content| Gemini[Google Gemini 1.5]
-        LLM_Router -->|Chat Completion| Groq[Groq Llama 3]
-        LLM_Router -->|Chat Completion| xAI[xAI Grok]
-        Gemini -->|React Code| API
-        Groq -->|React Code| API
-        xAI -->|React Code| API
-    end
-    
-    API -->|JSON with Code| Home[Home Page State]
-    
-    subgraph "Browser (Client Rendering)"
-        Home -->|Code State| ComponentPreview[Component Preview]
-        Home -->|Code State| CodeExporter[Code Viewer]
-        
-        ComponentPreview -->|Raw String| Babel[Babel Standalone]
-        Babel -->|Transpiled JS| ShadowDOM[Render Sandbox/iFrame]
-    end
-    
-    style User fill:#22d3ee,stroke:#22d3ee,color:#000
-    style API fill:#a855f7,stroke:#a855f7,color:#fff
-    style LLM_Router fill:#1e293b,stroke:#a855f7,color:#fff
-    style Babel fill:#facc15,stroke:#facc15,color:#000
+    User([User PRD Input]) --> Analyzer[Agent 1: PRD Analyzer]
+    Analyzer --> Memory[Memory Store]
+    Memory --> UIGen[Agent 2: UI Generator]
+    UIGen --> Tools[Tool Layer]
+
+    Tools --> Preview[Preview UI]
+    Tools --> Export[Export Code]
+
+    Preview --> UI[Frontend Display]
 ```
 
 ---
 
-## 🛠 Tech Stack
+# ✨ Features
+
+- **🚀 Real-time UI Generation**
+- **🤖 Multi-Agent Pipeline (Analyzer + Generator)**
+- **🧠 Memory Persistence**
+- **🔧 Tool Calling Architecture**
+- **💎 Premium UI Rendering**
+- **🛠 Code Preview + Export**
+- **📦 PRD → Structured → UI Flow**
+
+---
+
+# 🏗 Architecture
+
+The system uses a **hybrid execution model**:
+
+- Server: LLM + agent orchestration  
+- Client: UI rendering + preview  
+
+```mermaid
+graph TD
+    User([User]) -->|Inputs PRD| AnalyzerAgent
+    AnalyzerAgent -->|Structured JSON| Memory
+    Memory --> UIGeneratorAgent
+
+    UIGeneratorAgent --> Tools
+
+    Tools -->|Generate UI| API
+    API --> Frontend
+
+    Frontend --> Preview[Babel Preview]
+    Frontend --> Export[Code Viewer]
+```
+
+---
+
+# 🛠 Tech Stack
 
 | Layer | Technologies |
 | :--- | :--- |
 | **Frontend** | React, Next.js 15, Tailwind CSS |
-| **Runtime** | Babel Standalone (In-browser Transpilation) |
-| **Styling** | Vanilla CSS, Framer Motion (Animations) |
-| **AI Models** | Google Gemini 1.5 Flash, Llama 3.3 (via Groq), Grok Beta (via xAI) |
+| **Runtime** | Babel Standalone |
+| **AI Models** | Gemini / Groq / Grok |
+| **Agent System** | Custom multi-agent logic |
+| **Memory** | Local storage / JSON |
 
 ---
 
-## 🚀 Getting Started
+# 🚀 Getting Started
 
-### 1. Prerequisite: API Keys
-Create a `.env.local` file in the root directory and add one of the following:
+### 1. Setup Environment
 
-```env
-NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_key_here
-# OR
-# NEXT_PUBLIC_GEMINI_API_KEY=your_groq_key_here (The system auto-detects based on prefix)
+```
+NEXT_PUBLIC_GEMINI_API_KEY=your_key_here
 ```
 
-### 2. Install Dependencies
-```bash
+---
+
+### 2. Install
+
+```
 npm install
 ```
 
-### 3. Run Development Server
-```bash
+---
+
+### 3. Run
+
+```
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to start generating.
+---
+
+# 🎯 Key Concept
+
+This project demonstrates:
+
+> Transition from a **single AI feature** → **complete agentic system**
 
 ---
 
-## 👥 Team: TeamDelta
+# 👥 Team: TeamDelta
 
-- **Shobhin Shaji**
-- **Mohammed jalal MK**
+- Shobhin Shaji  
+- Mohammed Jalal MK  
 
 ---
 
-## 📜 License
-This project is licensed under the MIT License.
+# 📜 License
+
+MIT License
