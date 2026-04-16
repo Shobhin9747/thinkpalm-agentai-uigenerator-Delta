@@ -2,7 +2,10 @@
 
 A high-performance, distraction-free dashboard for generating premium React components using an AI-driven agentic pipeline. Describe your requirements (PRD), and watch as the system synthesizes, transpiles, and renders your UI in real-time.
 
-<video src="SpecToUIAgent.mp4" width="100%" controls muted autoplay loop></video>
+<video width="100%" controls poster="src/assets/prototype.png">
+  <source src="SpecToUIAgent.mp4" type="video/mp4">
+  Your browser does not support the video tag. [Watch Demo Video here](SpecToUIAgent.mp4)
+</video>
 
 ![Prototype Dashboard](src/assets/prototype.png)
 
